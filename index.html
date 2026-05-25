@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Application JS</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="block w-full h-full overflow-auto relative">
+    <!-- en tête -->
+    <header class="flex items-center justify-between w-full">
+      <figure>
+        <img src="/images/logo.png" alt="log" class="max-w-3/12" />
+      </figure>
+      <select class="select select-ghost" id="theme-select">
+        <option disabled selected>Thèmes:</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="cupcake">Cupcake</option>
+        <option value="silk">Silk</option>
+        <option value="dracula">Dracula</option>
+      </select>
+    </header>
+
+    <main class="min-h-screen w-full max-md:2xl block overflow-hidden">
+      <!-- Le champ qui permettra de d'ajouter une suggestion -->
+      <div class="flex flex-col space-y-2 justify-center items-center h-full w-full">
+        <h2 class="text-3xl text-center">Nouvelle idée ?</h2>
+
+        <form class="w-full max-w-md mx-auto flex flex-col gap-5 p-6 rounded-2xl" id="myForm">
+          <div class="w-full">
+            <label class="label">
+              <span class="label-text font-medium">Titre</span>
+            </label>
+            <input type="text" placeholder="Écrire le titre" class="input input-ghost w-full rounded-md" id="title" required />
+          </div>
+
+          <div class="w-full">
+            <label class="label">
+              <span class="label-text font-medium">Catégorie</span>
+            </label>
+            <select class="select border-none z-20 w-full rounded-md" id="cat-select" required>
+              <option disabled selected>Sélectionne la catégorie</option>
+              <option value="pedagogie">Pédagogie</option>
+              <option value="evenement">Événement</option>
+              <option value="vieACampus">Vie de campus</option>
+              <option value="ameliorationTechnique">Amélioration technique</option>
+            </select>
+          </div>
+
+          <div class="w-full">
+            <label class="label">
+              <span class="label-text font-medium">Description</span>
+            </label>
+            <input type="text" placeholder="Écrire une description" class="input input-ghost w-full rounded-md" id="desc" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full rounded-xl mt-2">Valider</button>
+        </form>
+      </div>
+      <!--  -->
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
