@@ -13,7 +13,7 @@
     <!-- en tête -->
     <header class="flex items-center justify-between w-full">
       <figure>
-        <img src="/images/logo.png" alt="log" class="max-w-3/12" />
+        <img src="/images/logo.png" alt="log" class="max-w-20 rounded-full object-contain" />
       </figure>
       <select class="select select-ghost" id="theme-select">
         <option disabled selected>Thèmes:</option>
@@ -25,7 +25,7 @@
       </select>
     </header>
 
-    <main class="min-h-screen w-full max-md:2xl block overflow-hidden">
+    <main class="min-h-screen w-full block overflow-hidden">
       <!-- Le champ qui permettra de d'ajouter une suggestion -->
       <div class="flex flex-col space-y-2 justify-center items-center h-full w-full">
         <h2 class="text-3xl text-center">Nouvelle idée ?</h2>
@@ -61,7 +61,53 @@
           <button type="submit" class="btn btn-primary w-full rounded-xl mt-2">Valider</button>
         </form>
       </div>
-      <!--  -->
+      <!--- les suggestions  -->
+      <section class="sgsts min-h-dvh w-full overflow-hidden">
+        <div class="mx-auto flex w-full flex-col items-center">
+          <div class="mb-10 text-center">
+            <h2 class="text-3xl font-bold tracking-tight">Suggestions</h2>
+            <p class="mt-2 max-w-md text-sm text-base-content/60">Découvrez les idées proposées par la communauté.</p>
+          </div>
+
+          <div class="w-full">
+            <div class="data-container" style="padding: 0 30px; margin-top: 25px ">
+              <div
+                id="allSuggestions"
+                class="min-h-96 rounded-2xl border border-base-300 bg-base-100/80 shadow-sm backdrop-blur-md grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+                style="padding: 5px"></div>
+            </div>
+          </div>
+        </div>
+        <dialog id="my_modal_3" class="modal">
+          <div class="modal-box max-w-md rounded-2xl border border-base-300 bg-base-100 p-6 shadow-2xl">
+            <div class="text-center" style="margin-bottom: 6px">
+              <h3 class="text-2xl font-bold tracking-tight">Mettre à jour</h3>
+              <p class="text-sm text-base-content/60" style="margin-top: 2px">Clique en dehors du modal ou appuie sur ESC pour fermer.</p>
+            </div>
+
+            <form class="flex w-full flex-col gap-5" id="updateForm">
+              <div class="flex flex-col gap-2">
+                <label for="newTitle" class="text-sm font-medium text-base-content/80">Titre</label>
+                <input type="text" id="newTitle" placeholder="Nouveau titre" class="input input-bordered w-full rounded-xl" />
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <label for="newDesc" class="text-sm font-medium text-base-content/80">Description</label>
+                <textarea
+                  id="newDesc"
+                  placeholder="Nouvelle description"
+                  class="textarea textarea-bordered min-h-28 w-full resize-none rounded-xl"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-full rounded-xl">Mettre à jour</button>
+            </form>
+          </div>
+
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      </section>
     </main>
 
     <script src="app.js"></script>
