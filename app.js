@@ -20,7 +20,6 @@ const createElementAndStyle = (tag, className, content = "") => {
   return element;
 };
 
-// Fonction ajou dans le localstorage
 const saveSuggest = (suggest) => {
   return new Promise((resolve, reject) => {
     if (suggest) {
@@ -59,35 +58,38 @@ const renderSuggestion = () => {
     setTimeout(() => {
       const allSuggests = suggestions.map((suggest) => {
         return `
-          <div class="rounded-2xl border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur-md transition hover:-translate-y-1 hover:shadow-lg relative">
-            <div class="flex flex-col gap-3">
-              
-              <div class="flex items-start justify-between gap-3">
-                <h3 class="text-lg font-semibold leading-tight text-base-content">
-                  ${suggest.title}
-                </h3>
+  <article class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+    <div class="mb-4 flex items-start justify-between gap-3">
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-wide text-primary">
+          Nouvelle idée
+        </span>
 
-                <small class="badge badge-secondary">
-                  ${suggest.category}
-                </small>
-              </div>
+        <h3 class="mt-1 text-lg font-bold leading-snug">
+          ${suggest.title}
+        </h3>
+      </div>
 
-              <p class="text-sm leading-relaxed text-base-content/70">
-                ${suggest.description}
-              </p>
+      <span class="badge badge-outline badge-primary shrink-0">
+        ${suggest.category}
+      </span>
+    </div>
 
-              <div class="flex items-center gap-5 mt-4">
-                <button class="btn btn-accent edit-btn" data-id="${suggest.id}">
-                  <span>Mettre à jour</span>
-                </button>
+    <p class="min-h-12 text-sm leading-relaxed text-base-content/70">
+      ${suggest.description}
+    </p>
 
-                <button class="btn btn-error delete-btn" data-id="${suggest.id}">
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
+    <div class="mt-5 flex items-center justify-end gap-2 border-t border-base-300 pt-4">
+      <button class="btn btn-sm btn-ghost edit-btn" data-id="${suggest.id}">
+        Modifier
+      </button>
+
+      <button class="btn btn-sm btn-error btn-outline delete-btn" data-id="${suggest.id}">
+        Supprimer
+      </button>
+    </div>
+  </article>
+`;
       });
 
       loadingElement.remove();
@@ -117,6 +119,20 @@ const updateSuggest = (id, newTitle, newDescription) => {
   });
 };
 
+const removeSuggest = (id) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (suggestions.length === 0) {
+        reject(new Error("Aucune données"));
+        return;
+      }
+      suggestions = suggestions.filter((suggest) => suggest.id !== id);
+      saveSuggest(suggestions);
+      resolve(suggestions);
+    }, 2000);
+  });
+};
+
 // -------------------------------------Fin Fonctions-------------------------------------
 
 // -------------------------------------Evenement-------------------------------------
@@ -137,6 +153,7 @@ addForm.addEventListener("submit", async (e) => {
     await addSuggest(newSuggest);
     await saveSuggest(newSuggest);
     alert("Suggestion crée avec succes");
+    renderSuggestion();
   } catch (error) {
     console.log(`Erreur du serveur: ${error}`);
   }
@@ -145,26 +162,35 @@ addForm.addEventListener("submit", async (e) => {
 allSuggestions.addEventListener("click", async (e) => {
   try {
     const btn = e.target.closest(".edit-btn");
+    const btnRemove = e.target.closest(".delete-btn");
 
-    if (!btn) return;
+    // SUPPRESSION
+    if (btnRemove) {
+      const idToRemove = Number(btnRemove.dataset.id);
+      await removeSuggest(idToRemove);
+      renderSuggestion();
 
-    const id = Number(btn.dataset.id);
-
-    const suggestEdit = suggestions.find((suggest) => suggest.id === id);
-
-    if (!suggestEdit) {
-      console.log("Suggestion introuvable");
       return;
     }
 
-    newTitle.value = suggestEdit.title;
-    newDescription.value = suggestEdit.description;
+    // UPDATE
+    if (btn) {
+      const id = Number(btn.dataset.id);
+      const suggestEdit = suggestions.find((suggest) => suggest.id === id);
 
-    updateForm.dataset.id = id;
+      if (!suggestEdit) {
+        console.log("Suggestion introuvable");
+        return;
+      }
 
-    my_modal_3.showModal();
+      newTitle.value = suggestEdit.title;
+      newDescription.value = suggestEdit.description;
+      updateForm.dataset.id = id;
 
-    console.log("ID à modifier :", id);
+      my_modal_3.showModal();
+      console.log("ID à modifier :", id);
+      return;
+    }
   } catch (error) {
     console.log(error);
   }
