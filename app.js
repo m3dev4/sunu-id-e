@@ -50,7 +50,7 @@ const addSuggest = (suggest) => {
         console.log("Erreur lors du creation");
         reject(suggestions);
       }
-    }, 2000);
+    }, 1300);
   });
 };
 
@@ -105,7 +105,7 @@ const renderSuggestion = () => {
       allSuggestions.innerHTML = allSuggests.join("");
 
       resolve();
-    }, 2000);
+    }, 1300);
   });
 };
 
@@ -137,7 +137,7 @@ const removeSuggest = (id) => {
       suggestions = suggestions.filter((suggest) => suggest.id !== id);
       saveSuggest(suggestions);
       resolve(suggestions);
-    }, 2000);
+    }, 1300);
   });
 };
 
