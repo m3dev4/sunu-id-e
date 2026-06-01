@@ -28,44 +28,23 @@ const createElementAndStyle = (tag, className, content = "") => {
   return element;
 };
 
-const saveSuggest = (suggest) => {
-  return new Promise((resolve, reject) => {
-    if (suggest) {
-      localStorage.setItem("suggestions", JSON.stringify(suggestions));
-      resolve(suggestions);
-    } else {
-      console.log("Erreur lors du save des données dans le localstorage");
-      reject(suggestions);
-    }
-  });
+const saveSuggest = () => {
+  localStorage.setItem("suggestions", JSON.stringify(suggestions));
 };
 
 const addSuggest = (suggest) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (suggest) {
-        suggestions.push(suggest);
-        resolve(suggestions);
-      } else {
-        console.log("Erreur lors du creation");
-        reject(suggestions);
-      }
-    }, 1300);
-  });
+  if (!suggest) {
+    throw new Error("Erreur lors du creation");
+  }
+
+  suggestions.push(suggest);
+  saveSuggest();
+  return suggestions;
 };
 
 const renderSuggestion = () => {
-  return new Promise((resolve, reject) => {
-    const dataContainer = document.querySelector(".data-container");
-    const allSuggestions = document.getElementById("allSuggestions");
-
-    const loadingElement = createElementAndStyle("div", "text-center text-lg font-bold my-5", "Loading...");
-
-    dataContainer.appendChild(loadingElement);
-
-    setTimeout(() => {
-      const allSuggests = suggestions.map((suggest) => {
-        return `
+  const allSuggests = suggestions.map((suggest) => {
+    return `
            <article class="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
              <div class="mb-4 flex items-start justify-between gap-3">
                 <div>
@@ -98,47 +77,87 @@ const renderSuggestion = () => {
               </div>
           </article>
         `;
-      });
-
-      loadingElement.remove();
-
-      allSuggestions.innerHTML = allSuggests.join("");
-
-      resolve();
-    }, 1300);
   });
+
+  allSuggestions.innerHTML = allSuggests.join("");
 };
 
 const updateSuggest = (id, newTitle, newDescription) => {
-  return new Promise((resolve) => {
-    suggestions = suggestions.map((suggest) => {
-      if (suggest.id === id) {
-        return {
-          ...suggest,
-          title: newTitle,
-          description: newDescription,
-        };
-      }
-      return suggest;
-    });
-    saveSuggest(suggestions);
-
-    resolve(suggestions);
+  suggestions = suggestions.map((suggest) => {
+    if (suggest.id === id) {
+      return {
+        ...suggest,
+        title: newTitle,
+        description: newDescription,
+      };
+    }
+    return suggest;
   });
+
+  saveSuggest();
+  return suggestions;
 };
 
 const removeSuggest = (id) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (suggestions.length === 0) {
-        reject(new Error("Aucune données"));
-        return;
-      }
-      suggestions = suggestions.filter((suggest) => suggest.id !== id);
-      saveSuggest(suggestions);
-      resolve(suggestions);
-    }, 1300);
-  });
+  if (suggestions.length === 0) {
+    throw new Error("Aucune données");
+  }
+
+  suggestions = suggestions.filter((suggest) => suggest.id !== id);
+  saveSuggest();
+  return suggestions;
+};
+
+const predictCategory = async (title) => {
+  try {
+    const prompt = `
+      Tu dois choisir une catégorie pour cette idée : ${title}
+
+      Les catégories sont :
+      - Pédagogie
+      - Événement
+      - Vie de campus
+      - Amélioration technique
+
+      Réponds uniquement par le nom exact de la catégorie sans aucune explication.
+`;
+
+    const response = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "mistral",
+        prompt: prompt,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur du serveur: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    console.log("Reponse ollama", data);
+
+    const predictedCategory = data.response?.trim();
+
+    if (!predictedCategory) {
+      console.log("Aucune catégorie prédite");
+      return;
+    }
+
+    console.log("Catégorie prédite :", predictedCategory);
+
+    category.value = predictedCategory; // change automatiquement la valeur du champ catégorie avec la catégorie trouvée par Ollama.
+    category.dispatchEvent(new Event("change"));
+
+    console.log("Valeur actuelle du select :", category.value);
+  } catch (error) {
+    console.log("Erreur lors de la prédiction de la catégorie", error);
+  }
 };
 
 // -------------------------------------Fin Fonctions-------------------------------------
@@ -151,7 +170,7 @@ theme.addEventListener("change", (e) => {
   localStorage.setItem("theme", selectTheme);
 });
 
-addForm.addEventListener("submit", async (e) => {
+addForm.addEventListener("submit", (e) => {
   try {
     e.preventDefault();
     const newSuggest = {
@@ -160,8 +179,7 @@ addForm.addEventListener("submit", async (e) => {
       category: category.value,
       description: description.value.trim(),
     };
-    await addSuggest(newSuggest);
-    await saveSuggest(newSuggest);
+    addSuggest(newSuggest);
     alert("Suggestion crée avec succes");
     renderSuggestion();
   } catch (error) {
@@ -169,7 +187,7 @@ addForm.addEventListener("submit", async (e) => {
   }
 });
 
-allSuggestions.addEventListener("click", async (e) => {
+allSuggestions.addEventListener("click", (e) => {
   try {
     const btn = e.target.closest(".edit-btn");
     const btnRemove = e.target.closest(".delete-btn");
@@ -177,7 +195,7 @@ allSuggestions.addEventListener("click", async (e) => {
     // SUPPRESSION
     if (btnRemove) {
       const idToRemove = Number(btnRemove.dataset.id);
-      await removeSuggest(idToRemove);
+      removeSuggest(idToRemove);
       renderSuggestion();
 
       return;
@@ -206,24 +224,31 @@ allSuggestions.addEventListener("click", async (e) => {
   }
 });
 
-updateForm.addEventListener("submit", async (e) => {
+updateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   try {
     const id = Number(updateForm.dataset.id);
 
-    await updateSuggest(id, newTitle.value.trim(), newDescription.value.trim());
-    await renderSuggestion();
+    updateSuggest(id, newTitle.value.trim(), newDescription.value.trim());
+    renderSuggestion();
     my_modal_3.close();
   } catch (error) {
     console.log("Error", error);
   }
 });
 
+title.addEventListener("blur", async (e) => {
+  const titleValue = e.target.value.trim();
+
+  if (!titleValue) return;
+  await predictCategory(titleValue);
+});
+
 // -------------------------------------Fin Evenement-------------------------------------
 
-async function main() {
+function main() {
   try {
-    await renderSuggestion();
+    renderSuggestion();
   } catch (error) {}
 }
 
